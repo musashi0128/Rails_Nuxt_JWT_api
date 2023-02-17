@@ -40,4 +40,4 @@ RUN apk update && \
 COPY . ./
 
 # CMDは、生成されたコンテナ内で実行したいコマンドを指定します。
-CMD ["rails", "server", "-b", "0.0.0.0"]
+# CMD ["rails", "server", "-b", "0.0.0.0"]
