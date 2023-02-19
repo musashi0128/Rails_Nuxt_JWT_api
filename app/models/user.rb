@@ -1,3 +1,5 @@
+require "validator/email_validator"
+
 class User < ApplicationRecord
   # gem bcryptを使うメリット
     # 1.passwordを暗号化する
@@ -15,6 +17,10 @@ class User < ApplicationRecord
                     maximum: 30,
                     allow_blank: true
                    }
+
+  validates :email, presence: true,
+                    email: { allow_blank: true }
+
   VALID_PASSWORD_REGEX = /\A[\w\-]+\z/
   validates :password, presence: true,
                        length: {
@@ -27,4 +33,17 @@ class User < ApplicationRecord
                          allow_blank: true
                        },
                        allow_nil: true
+  class << self
+    # emailからアクティブなユーザーを返す
+    def find_by_activated(email)
+      find_by(email: email, activated: true)
+    end
+  end
+
+  # 自分以外の同じemailのアクティブなユーザーがいる場合にtrueを返す
+  def email_activated?
+    # 自分以外のUserを取得する
+    users = User.where.not(id: id)
+    users.find_by_activated(email).present?
+  end
 end
