@@ -127,4 +127,54 @@ class UserTest < ActiveSupport::TestCase
     # アクティブユーザーのemailの一意性は保たれているか
     assert_equal(1, User.where(email: email, activated: true).count)
   end
+
+  # パスワードの入力テスト
+  test "password_validation" do
+    # 入力必須
+    user = User.new(name: "test", email: "test@example.com")
+    user.save
+    required_msg = ["パスワードを入力してください"]
+    assert_equal(required_msg, user.errors.full_messages)
+
+    # min文字以上
+    min = 8
+    user.password = "a" * (min - 1)
+    user.save
+    minlength_msg = ["パスワードは8文字以上で入力してください"]
+    assert_equal(minlength_msg, user.errors.full_messages)
+
+    # max文字以下
+    max = 72
+    user.password = "a" * (max + 1)
+    user.save
+    maxlength_msg = ["パスワードは72文字以内で入力してください"]
+    assert_equal(maxlength_msg, user.errors.full_messages)
+
+    # 書式チェック VALID_PASSWORD_REGEX = /\A[\w\-]+\z/
+    ok_passwords = %w(
+      pass---word
+      ________
+      12341234
+      ____pass
+      pass----
+      PASSWORD
+    )
+    ok_passwords.each do |pass|
+      user.password = pass
+      assert user.save
+    end
+
+    ng_passwords = %w(
+      pass/word
+      pass.word
+      |~=?+"a"
+      password@
+    )
+    format_msg = ["パスワードは半角英数字•ﾊｲﾌﾝ•ｱﾝﾀﾞｰﾊﾞｰが使えます"]
+    ng_passwords.each do |pass|
+      user.password = pass
+      user.save
+      assert_equal(format_msg, user.errors.full_messages)
+    end
+  end
 end
