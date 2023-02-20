@@ -10,6 +10,7 @@ class User < ApplicationRecord
     # 6.72文字まで使える
     # 7.User.create() => 入力必須のバリデーションが追加
   has_secure_password
+  before_validation :downcase_email
 
   # validates
   validates :name, presence: true,
@@ -46,4 +47,10 @@ class User < ApplicationRecord
     users = User.where.not(id: id)
     users.find_by_activated(email).present?
   end
+
+  private
+   # emailの小文字か
+   def downcase_email
+    self.email.downcase! if email
+   end
 end
